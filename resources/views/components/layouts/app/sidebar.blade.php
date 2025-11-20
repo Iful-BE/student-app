@@ -31,7 +31,7 @@
                     </div>
 
                     <flux:navlist.item
-                        icon="user"
+                        icon="user-group"
                         :href="route('student.index')"
                         :current="request()->routeIs('student.index')"
                         wire:navigate
@@ -42,7 +42,7 @@
                         {{ __('Student') }}
                     </flux:navlist.item>
                      <flux:navlist.item
-                        icon="user"
+                        icon="user-circle"
                         :href="route('profile.edit')"
                         :current="request()->routeIs('profile.edit')"
                         wire:navigate
