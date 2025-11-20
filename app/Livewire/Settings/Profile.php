@@ -1,0 +1,109 @@
+<?php
+
+namespace App\Livewire\Settings;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+
+class Profile extends Component
+{
+    use WithFileUploads;
+
+    public string $name = '';
+    public string $email = '';
+    public string $position = '';
+    public $photo;        
+    public $photoPreview; 
+
+    /**
+     * Mount the component.
+     */
+    public function mount(): void
+    {
+        $user = Auth::user();
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->position = $user->position??'';
+        if ($user->profile_photo_path) {
+        $this->photoPreview = asset('storage/' . $user->profile_photo_path);
+         }
+    }
+
+    /**
+     * Update the profile information for the currently authenticated user.
+     */
+   public function updateProfileInformation(): void
+        {
+            $user = Auth::user();
+
+            $validated = $this->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'position' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique(User::class)->ignore($user->id),
+                ],
+                'photo' => ['nullable', 'image', 'max:1024'],
+            ]);
+
+            if ($this->photo) {
+            
+                $originalName = $this->photo->getClientOriginalName();
+                $path = $this->photo->store('profile-photos', 'public');
+                $validated['photo'] = $originalName;
+                $validated['profile_photo_path'] = $path;
+                $this->photoPreview = $this->photo->temporaryUrl();
+            }
+
+            $user->fill($validated);
+
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
+            $user->save();
+
+            $this->dispatch('profile-updated', name: $user->name);
+        }
+
+    /**
+     * Preview foto sebelum submit
+     */
+    public function updatedPhoto()
+    {
+        $this->validate([
+            'photo' => 'image|max:1024',
+        ]);
+
+        $this->photoPreview = $this->photo->temporaryUrl();
+    }
+
+        /**
+         * Send an email verification notification to the current user.
+         */
+        public function resendVerificationNotification(): void
+        {
+            $user = Auth::user();
+
+            if ($user->hasVerifiedEmail()) {
+                $this->redirectIntended(default: route('dashboard', absolute: false));
+                return;
+            }
+
+            $user->sendEmailVerificationNotification();
+            Session::flash('status', 'verification-link-sent');
+        }
+
+    public function render()
+    {
+        return view('livewire.settings.profile');
+    }
+}
