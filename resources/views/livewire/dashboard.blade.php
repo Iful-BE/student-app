@@ -35,7 +35,7 @@
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
     @foreach($lembagaStudents as $item)
-        <div class="flex items-center gap-4 p-4 bg-white rounded-xl shadow border border-neutral-200 dark:border-neutral-700">
+        <div class="flex items-center gap-4 p-4 bg-white border-neutral-200 dark:bg-zinc-800 rounded-xl shadow border  dark:border-neutral-700">
          
             <div class="flex h-12 w-12 items-center justify-center bg-blue-100 rounded-full">
                 <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
